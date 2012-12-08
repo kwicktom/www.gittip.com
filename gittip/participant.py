@@ -4,7 +4,10 @@ from aspen import Response
 from decimal import Decimal
 
 import gittip
+from gittip import orm
 from aspen.utils import typecheck
+
+from sqlalchemy import Table
 
 
 ASCII_ALLOWED_IN_PARTICIPANT_ID = set("0123456789"
@@ -27,9 +30,10 @@ def require_id(func):
     return wrapped
 
 
-class Participant(object):
+class Participant(orm.Base):
     """Represent a Gittip participant.
     """
+    __table__ = Table('participants', orm.metadata, autoload=True)
 
     def __init__(self, participant_id):
         typecheck(participant_id, (unicode, None))

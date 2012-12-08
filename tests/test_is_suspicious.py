@@ -17,6 +17,7 @@ def toggle_is_suspicious():
 
 def test_participants_start_out_with_is_suspicious_None():
     with participants() as context:
+        print context
         actual = context.dump()['participants']['foo']['is_suspicious']
         assert actual is None, actual
 
