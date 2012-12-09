@@ -132,6 +132,7 @@ def clear(thing, participant_id, balanced_account_uri):
          WHERE id=%%s
 
     """ % ("bill" if thing == "credit card" else "ach")
+
     db.execute(CLEAR, (participant_id,))
 
 

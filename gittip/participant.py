@@ -5,9 +5,11 @@ from decimal import Decimal
 
 import gittip
 from gittip import orm
+
 from aspen.utils import typecheck
 
-from sqlalchemy import Table
+from sqlalchemy import func, Table
+
 
 
 ASCII_ALLOWED_IN_PARTICIPANT_ID = set("0123456789"
@@ -35,24 +37,14 @@ class Participant(orm.Base):
     """
     __table__ = Table('participants', orm.metadata, autoload=True)
 
-    def __init__(self, participant_id):
+    def __init__(self, participant_id, **kwargs):
         typecheck(participant_id, (unicode, None))
-        self.id = participant_id
+        super(Participant, self).__init__(id=participant_id, **kwargs)
 
 
     @require_id
     def get_details(self):
-        """Return a dictionary.
-        """
-        SELECT = """
-
-            SELECT *
-              FROM participants
-             WHERE id = %s
-
-        """
-        return gittip.db.fetchone(SELECT, (self.id,))
-
+        return self
 
     # Claiming
     # ========
@@ -67,26 +59,19 @@ class Participant(orm.Base):
                                  "WHERE participant_id = %s", (self.id,))
         if rec is None:
             out = None
-        elif rec['platform'] == 'github':
-            out = '/on/github/%s/' % rec['user_info']['login']
+        elif self.platform == 'github':
+            out = '/on/github/%s/' % self.user_info['login']
         else:
             assert rec['platform'] == 'twitter'
-            out = '/on/twitter/%s/' % rec['user_info']['screen_name']
+            out = '/on/twitter/%s/' % self.user_info['screen_name']
         return out
 
     @require_id
     def set_as_claimed(self):
-        CLAIM = """\
-
-            UPDATE participants
-               SET claimed_time=CURRENT_TIMESTAMP
-             WHERE id=%s
-               AND claimed_time IS NULL
-
-        """
-        gittip.db.execute(CLAIM, (self.id,))
-
-
+        if self.claimed:
+            return
+        self.claimed = func.clock_timestamp()
+        orm.Session.commit()
 
     @require_id
     def change_id(self, suggested):
@@ -179,6 +164,7 @@ class Participant(orm.Base):
                         AND last_bill_result = ''
                         AND is_suspicious IS NOT true
                    ORDER BY tipper
+                          , mtime DESC
                           , mtime DESC
                     ) AS foo
 
