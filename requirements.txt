@@ -31,4 +31,4 @@
 
 ./vendor/fake-factory-0.2.tar.gz
 
-./vendor/pycountry-0.14.8.zip
+./vendor/iso3166-0.1.tar.gz

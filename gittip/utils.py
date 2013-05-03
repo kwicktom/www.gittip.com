@@ -2,9 +2,10 @@ from aspen import Response
 from aspen.utils import typecheck
 from tornado.escape import linkify
 from gittip.models.participant import Participant
-import pycountry
+import iso3166
 
-COUNTRIES = [(country.alpha3, country.name) for country in pycountry.countries]
+
+COUNTRIES = [(country.alpha3, country.name) for country in iso3166.countries]
 COUNTRIES_MAP = dict(COUNTRIES)
 
 
